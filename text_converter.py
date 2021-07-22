@@ -64,19 +64,17 @@ class WikidotToMarkdown(TextConverter):
 
 
         self.regex_replacements = {
-            r'\r\n': r'\n',
+            r'^\+ (.*?\w.*?)$': r"# \1",  # headings + -> #
+            r'^\+\+ (.*?\w.*?)$': r"## \1",
+            r'^\+\+\+ (.*?\w.*?)$': r"### \1",
+            r'^\+\+\+\+ (.*?\w.*?)$': r"#### \1",
 
-            r'^\+ ([^\n]*)$': r"# \1",  # headings + -> #
-            r'^\+\+ ([^\n]*)$': r"## \1",
-            r'^\+\+\+ ([^\n]*)$': r"### \1",
-            r'^\+\+\+\+ ([^\n]*)$': r"#### \1",
-
-            r'([^:])//([\S\t ]*?)//': r'\1*\2*',  # italics //...// -> _..._
-            r'__([\S\t ]*?)__': r'<u>\1</u>',  # underlining __...__ -> <u>...</u>
-            r'--([\S\t ]*?)--': r'~~\1~~',  # strikeout __...__ -> <u>...</u>
-            r'{{([\S\t ]*?)}}': r'`\1`',  # inline monospaced text {{...}} -> `...`
-            r'\^\^([\S\t ]*?)\^\^': r'<sup>\1</sup>',  # ^^...^^ -> <sup>...</sup>
-            r',,([\S\t ]*?),,': r'<sub>\1</sub>',  # ,,...,, -> <sub>...</sub>
+            r'([^:])//(.*?\S.*?)//': r'\1*\2*',  # italics //...// -> _..._
+            r'__(.*?\w.*?)__': r'<u>\1</u>',  # underlining __...__ -> <u>...</u>
+            r'--(.*?\w.*?)--': r'~~\1~~',  # strikeout __...__ -> <u>...</u>
+            r'{{(.*?\S.*?)}}': r'`\1`',  # inline monospaced text {{...}} -> `...`
+            r'\^\^(.*?\S.*?)\^\^': r'<sup>\1</sup>',  # ^^...^^ -> <sup>...</sup>
+            r',,(.*?\S.*?),,': r'<sub>\1</sub>',  # ,,...,, -> <sub>...</sub>
 
             r'^\[\[collapsible *show *= *"(.*?)".*?\]\]': r'<details style="display: inline;"><summary>\1</summary>',
             r'^\[\[/collapsible\]\]': '</details>',
@@ -99,12 +97,18 @@ class WikidotToMarkdown(TextConverter):
             r'\[\[(?:=|<|>|f<|f>)?image ([\w\%\.\-]*)(?: alt="(?P<alt>[^\]]*)"| (?:width|height)="(?P<wh>[0-9]*)px"| [a-z]*=".*?")*\]\]': r"![[\1|\g<wh>]]",
             # [[...image file.png alt="desc"]] -> ![[file.png|size]]
 
+            r'\[\[\[(?P<page>[\w\%\.\-\ ]+)?(?:#(?P<anc>[\w\%\.\-]+))(?P<desc> *\| *.*?)?\]\]\]': r'[[\g<page>#^\g<anc>\g<desc>]]', ## ref [[[page#anc | desc]]] -> [[page#^anc | desc]]
             r'\[\[\[(?P<page>[\w\%\.\-\ ]+)(?P<desc> *\| *.*?)?\]\]\]': r'[[\g<page>\g<desc>]]',  ## ref [[[page | desc]]] -> [[page | desc]]
-            r'\[\[\[(?P<page>[\w\%\.\-\ ]+)?(?:#(?P<anc>[\w]+))(?P<desc> *\| *.*?)?\]\]\]': r'[[\g<page>#^\g<anc>\g<desc>]]', ## ref [[[page#anc | desc]]] -> [[page#^anc | desc]]
-            r'\[#(?P<anc>[\w]+) *\]': r'[[#^\g<anc>]]',                            ## ref [#anc]      -> [[#^anc]]
-            r'\[#(?P<anc>[\w]+) *(?P<desc>\S.*?)?\]': r'[[#^\g<anc> | \g<desc>]]', ## ref [#anc desc] -> [[#^anc | desc]]
+            r'\[\[\[(?P<page>[\w\%\.\-\ ]+)?(?:#(?P<anc>[\w\%\.\-]+))(?P<desc> *.*?)?\]\]\]': r'[[\g<page>#^\g<anc> |\g<desc>]]',
+            ## ref [[[page#anc desc]]] -> [[page#^anc | desc]]
+            r'\[\[\[(?P<page>[\w\%\.\-\ ]+)(?P<desc> *.*?)?\]\]\]': r'[[\g<page> |\g<desc>]]',
+            ## ref [[[page desc]]] -> [[page | desc]]
+
+            r'\[#(?P<anc>[\w\%\.\-]+) *\]': r'[[#^\g<anc>]]',                            ## ref [#anc]      -> [[#^anc]]
+            r'\[#(?P<anc>[\w\%\.\-]+) *(?P<desc>\S.*?)?\]': r'[[#^\g<anc> | \g<desc>]]', ## ref [#anc desc] -> [[#^anc | desc]]
             # this must go after [[[page#anc | desc]]] -> ...
-            r'^(.*)\[\[# (\w+)\]\]([\s\S]*?)(?: *)(\r?)$(?=\s+?$)': r'\1\3 ^\2\4',  # Это анкер ...[[# anc]]... -> ...... ^anc
+            r'^(#+ .*)\[\[# ([\w\%\.\-]+)\]\]([\s\S]*?)(?: *)(\r?)$': r'\1\3 ^\2\4',  # Anchor at header #...[[# anc]]... -> # ...... ^anc
+            r'^(.*)\[\[# ([\w\%\.\-]+)\]\]([\s\S]*?)(?: *)(\r?)$(?=\s+?$)': r'\1\3 ^\2\4',  # Anchor to end of paragraph ...[[# anc]]... -> ...... ^anc
 
             # tables (up to 20 cols)
             r'^(\|\|.+?)\|\|': (r'\1|', 20),  # || ... || -> || ... |

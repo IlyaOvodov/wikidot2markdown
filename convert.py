@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import argparse
+import io
 from pathlib import Path
 import text_converter
 
@@ -13,7 +14,7 @@ class ConversionController(object):
         self.converter = text_converter.WikidotToMarkdown()
         self.overwrite = args.overwrite
         self.output_directory.mkdir(exist_ok=True)
-
+        self.rn2n = args.rn2n
 
     def process(self):
         if self.input.is_file():
@@ -35,7 +36,11 @@ class ConversionController(object):
             assert not out_file.is_file(),  f"file '{out_file}' already exists"
         text = input_file.read_text(encoding='utf-8')
         complete_text = self.converter.convert(text, input_file)
-        out_file.write_text(complete_text, encoding='utf-8')
+        if self.rn2n:
+            with io.open(out_file, 'w', encoding='utf-8', newline='\n') as f:
+                f.write(complete_text.replace('\r\n', '\n'))
+        else:
+            out_file.write_text(complete_text, encoding='utf-8')
 
 
 def main():
@@ -45,6 +50,7 @@ def main():
     parser.add_argument('--mask', '-m', default="*.txt", help="file mask for dir processing")
     parser.add_argument('--output', '-o', default="output", help="output dir")
     parser.add_argument('--overwrite', '-w', action='store_true', help="overwrite existing files")
+    parser.add_argument('--rn2n', '-n', action='store_true', help="replace CRLF to LF")
     args = parser.parse_args()
 
     converter = ConversionController(args)

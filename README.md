@@ -11,11 +11,11 @@ Inspired by https://github.com/vLj2/wikidot-to-markdown.
 ## Usage
 To convert a single file:
 
-    python3 convert.py --input|-i INPUT_FILE [--output|-o OUTPUT_DIR] [--overwrite|-w]
+    python3 convert.py --input|-i INPUT_FILE [--output|-o OUTPUT_DIR]
 
 To convert all files in an input directory: 
 
-    python3 convert.py --input|-i INPUT_DIRECTORY [--mask|-m MASK] [--output|-o OUTPUT_DIR] [--overwrite|-w]
+    python3 convert.py --input|-i INPUT_DIRECTORY [--mask|-m MASK] [--output|-o OUTPUT_DIR]
 
 Arguments:
 
@@ -39,6 +39,8 @@ and the output file already exists, program stops with error.
 
 Be aware of that while input directory is searched recursively, output files are placed in
 `OUTPUT_DIR` without subdirectories, that can cause conflicts.
+
+`--rn2n` or `-n`: don't include \r in line endings on Windows (use Unix style)  
 
 ## Supported Format Features
 

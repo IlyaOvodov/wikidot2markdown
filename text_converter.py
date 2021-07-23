@@ -12,7 +12,7 @@ ip_re = r"(?:25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\." \
         r"(?:25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])"
 addr_re = r"(?:[a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(?:com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2})"
 port_re = r"\:[0-9]+"
-page_re = r"(?:/(?:$|[a-zA-Z0-9\.\,\?\'\\\+&amp;%\$#\=~_\-]+))*"
+page_re = r"(?:/(?:$|[a-zA-Z0-9\.\,\?\'\\\+&amp;%\$#\=~_\-\*]+))*"
 url_re = fr"(?:{protocol_re})\://(?:{username_password_re})?(?:{ip_re}|localhost|{addr_re})(?:{port_re})?(?:{page_re})[/]?"
 
 uuid_re = r"[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}"
@@ -92,9 +92,9 @@ class WikidotToMarkdown(TextConverter):
             r'\[\[eref(?: +(?:eq?)?(\w+) *)\]\]': r'[[#^eq\1 | \1]]',
 
             r'\[\*?(' + url_re + r') ([^\]]*)\]': r'[\2](\1)',  # [*http://url desc] -> [desc](url)
-            r'\[\[(?:=|<|>|f<|f>)?image (' + url_re + r')(?: alt="(?P<alt>[^\]]*)"| (?:width|height)="(?P<wh>[0-9]*)px"| [a-z]*=".*?")*\]\]': r"![\g<alt>|\g<wh>](\1)",
+            r'\[\[(?:=|<|>|f<|f>)?image (' + url_re + r')(?: +alt="(?P<alt>[^\]]*)"| +(?:width|height)="(?P<wh>[0-9]*)px"| +[a-z]*=".*?")*\]\]': r"![\g<alt>|\g<wh>](\1)",
             # [[...image http://url alt="desc"]] -> ![desc](url)
-            r'\[\[(?:=|<|>|f<|f>)?image ([\w\%\.\-]*)(?: alt="(?P<alt>[^\]]*)"| (?:width|height)="(?P<wh>[0-9]*)px"| [a-z]*=".*?")*\]\]': r"![[\1|\g<wh>]]",
+            r'\[\[(?:=|<|>|f<|f>)?image ([\w\%\.\-]*)(?: +alt="(?P<alt>[^\]]*)"| +(?:width|height)="(?P<wh>[0-9]*)px"| +[a-z]*=".*?")*\]\]': r"![[\1|\g<wh>]]",
             # [[...image file.png alt="desc"]] -> ![[file.png|size]]
 
             r'\[\[\[(?P<page>[\w\%\.\-\ ]+)?(?:#(?P<anc>[\w\%\.\-]+))(?P<desc> *\| *.*?)?\]\]\]': r'[[\g<page>#^\g<anc>\g<desc>]]', ## ref [[[page#anc | desc]]] -> [[page#^anc | desc]]
